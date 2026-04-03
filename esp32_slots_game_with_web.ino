@@ -398,11 +398,11 @@ void handleRoot() {
 
         <div class="info-box">
             <strong>How to Play:</strong><br>
-            • Adjust your bet with ± BET buttons<br>
-            • Click SPIN to spin the reels<br>
-            • Match all 3 symbols to win big!<br>
-            • 3 matching: x50 multiplier<br>
-            • 2 matching: x5 multiplier
+              Adjust your bet with +- BET buttons<br>
+              Click SPIN to spin the reels<br>
+              Match all 3 symbols to win big!<br>
+              3 matching: x50 multiplier<br>
+              2 matching: x5 multiplier
         </div>
     </div>
 
