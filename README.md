@@ -3,10 +3,12 @@
 This project uses a eps32-s3 devkit and a LCM1602 screen to play slots
 
 #WIRING
-GND | GND
-VCC | 5V
-SDA | GPIO8
-SCL | GPIO9
+| LCM1602 Pin | ESP32-S3 Pin |
+|-------------|--------------|
+| GND         | GND          |
+| VCC         | 5V / VIN     |
+| SDA         | GPIO 8       |
+| SCL         | GPIO 9       |
 
 #Setup
 
