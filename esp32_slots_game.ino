@@ -148,7 +148,8 @@ void spinReels() {
   lcd.print(symbols[reel3]);
   lcd.print(" |");
   
-  delay(500);
+  // Extended delay so player can see the result
+  delay(3000);
   
   // Check for wins
   if (reel1 == reel2 && reel2 == reel3) {
