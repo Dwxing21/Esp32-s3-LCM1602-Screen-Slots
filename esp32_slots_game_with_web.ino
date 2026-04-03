@@ -150,372 +150,155 @@ void setupWebServer() {
 
 // ========== WEB HANDLERS ==========
 void handleRoot() {
-  String html = R"(
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP32 Slots Machine</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-            max-width: 500px;
-            width: 100%;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            color: #333;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .header p {
-            color: #666;
-            font-size: 1.1em;
-        }
-
-        .display-box {
-            background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
-            text-align: center;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat {
-            background: rgba(0, 255, 0, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            border: 2px solid #00ff00;
-        }
-
-        .stat-label {
-            font-size: 0.9em;
-            opacity: 0.7;
-            margin-bottom: 5px;
-        }
-
-        .stat-value {
-            font-size: 1.8em;
-            font-weight: bold;
-        }
-
-        .reel-display {
-            background: #000;
-            border: 3px solid #00ff00;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-            font-size: 3em;
-            letter-spacing: 20px;
-            line-height: 1.2;
-        }
-
-        .controls {
-            display: grid;
-            gap: 15px;
-        }
-
-        .bet-control {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        button {
-            flex: 1;
-            padding: 15px;
-            font-size: 1.1em;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn-decrease, .btn-increase {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            flex: 0.5;
-        }
-
-        .btn-decrease:hover, .btn-increase:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-decrease:active, .btn-increase:active {
-            transform: translateY(0);
-        }
-
-        .btn-spin {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            padding: 25px 15px;
-            font-size: 1.3em;
-            min-height: 60px;
-        }
-
-        .btn-spin:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(245, 87, 108, 0.4);
-        }
-
-        .btn-spin:active:not(:disabled) {
-            transform: translateY(-1px);
-        }
-
-        .btn-spin:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-reset {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-            color: #333;
-            padding: 12px;
-            font-size: 0.9em;
-        }
-
-        .btn-reset:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(250, 112, 154, 0.4);
-        }
-
-        .status {
-            text-align: center;
-            margin-top: 20px;
-            color: #666;
-            font-size: 0.95em;
-        }
-
-        .spinning {
-            animation: pulse 0.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .info-box {
-            background: #f0f0f0;
-            border-left: 4px solid #667eea;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 5px;
-            font-size: 0.9em;
-            color: #333;
-        }
-
-        .win-message {
-            color: #00cc00;
-            font-weight: bold;
-            animation: glow 1s infinite;
-        }
-
-        @keyframes glow {
-            0%, 100% { color: #00cc00; }
-            50% { color: #00ff00; }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🎰 SLOTS</h1>
-            <p>ESP32-S3 Web Interface</p>
-        </div>
-
-        <div class="display-box">
-            <div class="stats">
-                <div class="stat">
-                    <div class="stat-label">BALANCE</div>
-                    <div class="stat-value" id="balance">100</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-label">BET</div>
-                    <div class="stat-value" id="bet">10</div>
-                </div>
-            </div>
-
-            <div class="reel-display" id="reels">
-                | 7 | 7 | 7 |
-            </div>
-        </div>
-
-        <div class="controls">
-            <div class="bet-control">
-                <button class="btn-decrease" onclick="decreaseBet()">- BET</button>
-                <button class="btn-increase" onclick="increaseBet()">+ BET</button>
-            </div>
-
-            <button class="btn-spin" id="spinBtn" onclick="spin()">🎰 SPIN</button>
-
-            <button class="btn-reset" onclick="resetGame()">Reset Game</button>
-        </div>
-
-        <div class="status">
-            <p id="statusMsg">Ready to spin!</p>
-        </div>
-
-        <div class="info-box">
-            <strong>How to Play:</strong><br>
-              Adjust your bet with +- BET buttons<br>
-              Click SPIN to spin the reels<br>
-              Match all 3 symbols to win big!<br>
-              3 matching: x50 multiplier<br>
-              2 matching: x5 multiplier
-        </div>
-    </div>
-
-    <script>
-        const API_URL = window.location.origin;
-        let isSpinning = false;
-
-        async function fetchStatus() {
-            try {
-                const response = await fetch(API_URL + '/api/status');
-                const data = await response.json();
-                
-                document.getElementById('balance').textContent = data.balance;
-                document.getElementById('bet').textContent = data.bet;
-                
-                if (data.result) {
-                    displayReels(data.result);
-                }
-                
-                updateStatus(data.status);
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
-
-        async function spin() {
-            if (isSpinning) return;
-            
-            isSpinning = true;
-            document.getElementById('spinBtn').disabled = true;
-            document.getElementById('spinBtn').classList.add('spinning');
-            document.getElementById('statusMsg').textContent = 'SPINNING...';
-
-            try {
-                const response = await fetch(API_URL + '/api/spin');
-                const data = await response.json();
-                
-                // Animate spinning
-                for (let i = 0; i < 15; i++) {
-                    document.getElementById('reels').textContent = 
-                        '| ' + String.fromCharCode(Math.random() > 0.5 ? 36 : 55) + ' | ' + 
-                        String.fromCharCode(Math.random() > 0.5 ? 36 : 55) + ' | ' + 
-                        String.fromCharCode(Math.random() > 0.5 ? 36 : 55) + ' |';
-                    await sleep(100);
-                }
-
-                // Display result
-                displayReels(data.result);
-                updateStatus(data.message);
-                
-                await sleep(2000);
-                
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('statusMsg').textContent = 'Connection error!';
-            }
-
-            fetchStatus();
-            
-            isSpinning = false;
-            document.getElementById('spinBtn').disabled = false;
-            document.getElementById('spinBtn').classList.remove('spinning');
-        }
-
-        function displayReels(result) {
-            document.getElementById('reels').innerHTML = 
-                '| ' + result.reel1 + ' | ' + result.reel2 + ' | ' + result.reel3 + ' |';
-        }
-
-        function updateStatus(message) {
-            const statusElement = document.getElementById('statusMsg');
-            statusElement.textContent = message;
-            
-            if (message.includes('WIN') || message.includes('JACKPOT')) {
-                statusElement.classList.add('win-message');
-                setTimeout(() => statusElement.classList.remove('win-message'), 3000);
-            }
-        }
-
-        async function increaseBet() {
-            await fetch(API_URL + '/api/bet-increase');
-            await sleep(100);
-            fetchStatus();
-        }
-
-        async function decreaseBet() {
-            await fetch(API_URL + '/api/bet-decrease');
-            await sleep(100);
-            fetchStatus();
-        }
-
-        async function resetGame() {
-            if (confirm('Reset game to initial balance?')) {
-                await fetch(API_URL + '/api/reset');
-                await sleep(200);
-                fetchStatus();
-                document.getElementById('statusMsg').textContent = 'Game reset!';
-            }
-        }
-
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        // Update status periodically
-        setInterval(fetchStatus, 2000);
-
-        // Initial load
-        fetchStatus();
-    </script>
-</body>
-</html>
-  )";
+  String html = String() +
+    "<!DOCTYPE html>" +
+    "<html lang='en'>" +
+    "<head>" +
+    "<meta charset='UTF-8'>" +
+    "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+    "<title>ESP32 Slots Machine</title>" +
+    "<style>" +
+    "* { margin: 0; padding: 0; box-sizing: border-box; }" +
+    "body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }" +
+    ".container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); padding: 40px; max-width: 500px; width: 100%; }" +
+    ".header { text-align: center; margin-bottom: 30px; }" +
+    ".header h1 { color: #333; font-size: 2.5em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }" +
+    ".header p { color: #666; font-size: 1.1em; }" +
+    ".display-box { background: linear-gradient(135deg, #1a1a1a 0%, #333 100%); border-radius: 15px; padding: 30px; margin-bottom: 30px; color: #00ff00; font-family: monospace; text-align: center; }" +
+    ".stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }" +
+    ".stat { background: rgba(0,255,0,0.1); padding: 15px; border-radius: 10px; border: 2px solid #00ff00; }" +
+    ".stat-label { font-size: 0.9em; opacity: 0.7; margin-bottom: 5px; }" +
+    ".stat-value { font-size: 1.8em; font-weight: bold; }" +
+    ".reel-display { background: #000; border: 3px solid #00ff00; border-radius: 10px; padding: 20px; margin: 20px 0; font-size: 3em; letter-spacing: 20px; line-height: 1.2; }" +
+    ".controls { display: grid; gap: 15px; }" +
+    ".bet-control { display: flex; gap: 10px; margin-bottom: 10px; }" +
+    "button { flex: 1; padding: 15px; font-size: 1.1em; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; }" +
+    ".btn-decrease, .btn-increase { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; flex: 0.5; }" +
+    ".btn-decrease:hover, .btn-increase:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }" +
+    ".btn-decrease:active, .btn-increase:active { transform: translateY(0); }" +
+    ".btn-spin { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 25px 15px; font-size: 1.3em; min-height: 60px; }" +
+    ".btn-spin:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(245,87,108,0.4); }" +
+    ".btn-spin:active:not(:disabled) { transform: translateY(-1px); }" +
+    ".btn-spin:disabled { opacity: 0.5; cursor: not-allowed; }" +
+    ".btn-reset { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: #333; padding: 12px; font-size: 0.9em; }" +
+    ".btn-reset:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(250,112,154,0.4); }" +
+    ".status { text-align: center; margin-top: 20px; color: #666; font-size: 0.95em; }" +
+    ".spinning { animation: pulse 0.5s infinite; }" +
+    "@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }" +
+    ".info-box { background: #f0f0f0; border-left: 4px solid #667eea; padding: 15px; margin-top: 20px; border-radius: 5px; font-size: 0.9em; color: #333; }" +
+    ".win-message { color: #00cc00; font-weight: bold; animation: glow 1s infinite; }" +
+    "@keyframes glow { 0%,100% { color: #00cc00; } 50% { color: #00ff00; } }" +
+    "</style>" +
+    "</head>" +
+    "<body>" +
+    "<div class='container'>" +
+    "<div class='header'>" +
+    "<h1>Slots Machine</h1>" +
+    "<p>ESP32-S3 Web Interface</p>" +
+    "</div>" +
+    "<div class='display-box'>" +
+    "<div class='stats'>" +
+    "<div class='stat'>" +
+    "<div class='stat-label'>BALANCE</div>" +
+    "<div class='stat-value' id='balance'>100</div>" +
+    "</div>" +
+    "<div class='stat'>" +
+    "<div class='stat-label'>BET</div>" +
+    "<div class='stat-value' id='bet'>10</div>" +
+    "</div>" +
+    "</div>" +
+    "<div class='reel-display' id='reels'>| 7 | 7 | 7 |</div>" +
+    "</div>" +
+    "<div class='controls'>" +
+    "<div class='bet-control'>" +
+    "<button class='btn-decrease' onclick='decreaseBet()'>- BET</button>" +
+    "<button class='btn-increase' onclick='increaseBet()'>PLUS BET</button>" +
+    "</div>" +
+    "<button class='btn-spin' id='spinBtn' onclick='spin()'>SPIN</button>" +
+    "<button class='btn-reset' onclick='resetGame()'>Reset Game</button>" +
+    "</div>" +
+    "<div class='status'>" +
+    "<p id='statusMsg'>Ready to spin!</p>" +
+    "</div>" +
+    "<div class='info-box'>" +
+    "<strong>How to Play:</strong><br>" +
+    "- Adjust bet with buttons<br>" +
+    "- Click SPIN to spin reels<br>" +
+    "- Match all 3 symbols to win<br>" +
+    "- 3 matching: x50 multiplier<br>" +
+    "- 2 matching: x5 multiplier" +
+    "</div>" +
+    "</div>" +
+    "<script>" +
+    "const API_URL = window.location.origin;" +
+    "let isSpinning = false;" +
+    "async function fetchStatus() {" +
+    "try {" +
+    "const response = await fetch(API_URL + '/api/status');" +
+    "const data = await response.json();" +
+    "document.getElementById('balance').textContent = data.balance;" +
+    "document.getElementById('bet').textContent = data.bet;" +
+    "if (data.result) { displayReels(data.result); }" +
+    "updateStatus(data.status);" +
+    "} catch (error) { console.error('Error:', error); }" +
+    "}" +
+    "async function spin() {" +
+    "if (isSpinning) return;" +
+    "isSpinning = true;" +
+    "document.getElementById('spinBtn').disabled = true;" +
+    "document.getElementById('spinBtn').classList.add('spinning');" +
+    "document.getElementById('statusMsg').textContent = 'SPINNING...';" +
+    "try {" +
+    "const response = await fetch(API_URL + '/api/spin');" +
+    "const data = await response.json();" +
+    "for (let i = 0; i < 15; i++) {" +
+    "document.getElementById('reels').textContent = '| X | O | 7 |';" +
+    "await sleep(100);" +
+    "}" +
+    "displayReels(data.result);" +
+    "updateStatus(data.message);" +
+    "await sleep(2000);" +
+    "} catch (error) { console.error('Error:', error); document.getElementById('statusMsg').textContent = 'Error!'; }" +
+    "fetchStatus();" +
+    "isSpinning = false;" +
+    "document.getElementById('spinBtn').disabled = false;" +
+    "document.getElementById('spinBtn').classList.remove('spinning');" +
+    "}" +
+    "function displayReels(result) {" +
+    "document.getElementById('reels').textContent = '| ' + result.reel1 + ' | ' + result.reel2 + ' | ' + result.reel3 + ' |';" +
+    "}" +
+    "function updateStatus(message) {" +
+    "const statusElement = document.getElementById('statusMsg');" +
+    "statusElement.textContent = message;" +
+    "if (message.includes('WIN') || message.includes('JACKPOT')) {" +
+    "statusElement.classList.add('win-message');" +
+    "setTimeout(() => statusElement.classList.remove('win-message'), 3000);" +
+    "}" +
+    "}" +
+    "async function increaseBet() {" +
+    "await fetch(API_URL + '/api/bet-increase');" +
+    "await sleep(100);" +
+    "fetchStatus();" +
+    "}" +
+    "async function decreaseBet() {" +
+    "await fetch(API_URL + '/api/bet-decrease');" +
+    "await sleep(100);" +
+    "fetchStatus();" +
+    "}" +
+    "async function resetGame() {" +
+    "if (confirm('Reset game to initial balance?')) {" +
+    "await fetch(API_URL + '/api/reset');" +
+    "await sleep(200);" +
+    "fetchStatus();" +
+    "document.getElementById('statusMsg').textContent = 'Game reset!';" +
+    "}" +
+    "}" +
+    "function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }" +
+    "setInterval(fetchStatus, 2000);" +
+    "fetchStatus();" +
+    "</script>" +
+    "</body>" +
+    "</html>";
 
   server.sendHeader("Content-Type", "text/html; charset=utf-8");
   server.send(200, "text/html", html);
@@ -536,8 +319,21 @@ void handleSpin() {
   spinning = true;
   balance -= bet;
 
+  // Show spinning animation on LCD
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("SPINNING...");
+
   // Simulate spinning animation
   for (int i = 0; i < 15; i++) {
+    lcd.setCursor(0, 1);
+    lcd.print("| ");
+    lcd.print(symbols[random(NUM_SYMBOLS)]);
+    lcd.print(" | ");
+    lcd.print(symbols[random(NUM_SYMBOLS)]);
+    lcd.print(" | ");
+    lcd.print(symbols[random(NUM_SYMBOLS)]);
+    lcd.print(" |");
     delay(100);
   }
 
@@ -545,6 +341,17 @@ void handleSpin() {
   int reel1 = random(NUM_SYMBOLS);
   int reel2 = random(NUM_SYMBOLS);
   int reel3 = random(NUM_SYMBOLS);
+
+  // Display result on LCD
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("| ");
+  lcd.print(symbols[reel1]);
+  lcd.print(" | ");
+  lcd.print(symbols[reel2]);
+  lcd.print(" | ");
+  lcd.print(symbols[reel3]);
+  lcd.print(" |");
 
   // Check for wins
   String message = "No match... Try again!";
@@ -555,15 +362,32 @@ void handleSpin() {
     winAmount = bet * 50;
     balance += winAmount;
     message = "JACKPOT! Won $" + String(winAmount) + "!";
+    
+    lcd.setCursor(0, 1);
+    lcd.print("JACKPOT! $");
+    lcd.print(winAmount);
+    delay(2000);
+    
   } else if (reel1 == reel2 || reel2 == reel3 || reel1 == reel3) {
     // Two match
     winAmount = bet * 5;
     balance += winAmount;
     message = "You won $" + String(winAmount) + "!";
+    
+    lcd.setCursor(0, 1);
+    lcd.print("WIN! $");
+    lcd.print(winAmount);
+    delay(2000);
+    
+  } else {
+    lcd.setCursor(0, 1);
+    lcd.print("Try again...");
+    delay(2000);
   }
 
-  // Update LCD display
-  updateLCDAfterSpin(reel1, reel2, reel3, winAmount);
+  // Return to main screen
+  lastDisplayUpdate = 0;  // Force display update
+  displayMainScreen();
 
   // Prepare JSON response
   String response = "{\"result\":{\"reel1\":\"" + String(symbols[reel1]) + 
@@ -580,6 +404,7 @@ void handleBetIncrease() {
   if (!spinning && bet < balance) {
     bet += 5;
     if (bet > balance) bet = balance;
+    showBetChangeAnimation();
   }
   sendStatusJSON();
 }
@@ -587,7 +412,10 @@ void handleBetIncrease() {
 void handleBetDecrease() {
   if (!spinning && bet > 5) {
     bet -= 5;
+  } else if (bet == 5) {
+    // Already at minimum, just show it
   }
+  showBetChangeAnimation();
   sendStatusJSON();
 }
 
@@ -739,19 +567,31 @@ void displayWelcome() {
   lcd.print(" ESP32-S3");
 }
 
+void showBetChangeAnimation() {
+  // Show the new bet amount for 1.5 seconds
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("NEW BET:");
+  lcd.setCursor(0, 1);
+  lcd.print("$");
+  lcd.print(bet);
+  lcd.print("  Balance:");
+  lcd.print(balance);
+  delay(1500);
+  
+  // Return to main screen
+  displayMainScreen();
+}
+
 void displayMainScreen() {
-  unsigned long currentTime = millis();
-  if (currentTime - lastDisplayUpdate > 500) {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("BAL:");
-    lcd.print(balance);
-    lcd.print(" BET:");
-    lcd.print(bet);
-    lcd.setCursor(0, 1);
-    lcd.print("BOOT=SPIN");
-    lastDisplayUpdate = currentTime;
-  }
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("BAL:");
+  lcd.print(balance);
+  lcd.print(" BET:");
+  lcd.print(bet);
+  lcd.setCursor(0, 1);
+  lcd.print("BOOT=SPIN");
 }
 
 void displayWin(int multiplier) {
